@@ -1,336 +1,313 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import ProductViewer from './components/ProductViewer';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import ProductDetails from './components/ProductDetails';
+import CustomCursor from './components/CustomCursor';
+import { ShoppingBag, Search, Menu, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 
-const CATEGORIES = [
+const HERO_MODELS = [
   {
-    id: 'fashion',
-    name: 'Fashion',
-    products: [
-      {
-        id: 'shoe-1',
-        name: 'Ace Sneaker',
-        price: '$750',
-        description: 'The classic low-top sneaker with the iconic Web stripe. A staple of the House, redefined in premium leather.',
-        modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/MaterialsVariantsShoe/glTF-Binary/MaterialsVariantsShoe.glb',
-        scale: 10,
-        colors: ['#ffffff', '#10b981', '#ef4444', '#3b82f6']
-      },
-      {
-        id: 'shoe-2',
-        name: 'Retro Runner',
-        price: '$580',
-        description: 'A vintage-inspired silhouette with modern comfort technology. Perfect for both performance and style.',
-        modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/MaterialsVariantsShoe/glTF-Binary/MaterialsVariantsShoe.glb',
-        scale: 10,
-        colors: ['#f59e0b', '#10b981', '#3b82f6', '#ffffff']
-      }
-    ]
+    id: 'hero-1',
+    name: 'Ace Sneaker',
+    price: '$750',
+    description: 'The iconic low-top silhouette redefined with premium leather and sustainable materials.',
+    modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/MaterialsVariantsShoe/glTF-Binary/MaterialsVariantsShoe.glb',
+    scale: 12,
+    color: '#ffffff'
   },
   {
-    id: 'rc-cars',
-    name: 'RC Cars',
-    products: [
-      {
-        id: 'rc-1',
-        name: 'Turbo RC X1',
-        price: '$120',
-        description: 'High-performance remote-controlled racing car with aerodynamic design and durable chassis.',
-        modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/ToyCar/glTF-Binary/ToyCar.glb',
-        scale: 20,
-        colors: ['#ef4444', '#f59e0b', '#10b981', '#3b82f6']
-      },
-      {
-        id: 'rc-2',
-        name: 'Desert Stormer',
-        price: '$145',
-        description: 'All-terrain beast designed for the toughest tracks. Features reinforced suspension and high-torque motor.',
-        modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/ToyCar/glTF-Binary/ToyCar.glb',
-        scale: 20,
-        colors: ['#78350f', '#451a03', '#10b981', '#3b82f6']
-      }
-    ]
+    id: 'hero-2',
+    name: 'Cyber VR',
+    price: '$899',
+    description: 'High-fidelity virtual reality interface with integrated neural-link technology.',
+    modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/DamagedHelmet/glTF-Binary/DamagedHelmet.glb',
+    scale: 1,
+    color: '#2d2d2d'
   },
   {
-    id: 'gaming',
-    name: 'Gaming',
-    products: [
-      {
-        id: 'gaming-1',
-        name: 'Pro Gaming Chair',
-        price: '$350',
-        description: 'Ergonomic gaming chair designed for long sessions, featuring premium sheen fabric and adjustable support.',
-        modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/SheenChair/glTF-Binary/SheenChair.glb',
-        scale: 2.5,
-        colors: ['#3b82f6', '#8b5cf6', '#ec4899', '#10b981']
-      },
-      {
-        id: 'gaming-2',
-        name: 'Cyber VR Helmet',
-        price: '$899',
-        description: 'Next-generation virtual reality interface with ultra-low latency and neural-sync technology.',
-        modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/DamagedHelmet/glTF-Binary/DamagedHelmet.glb',
-        scale: 1.1,
-        colors: ['#64748b', '#334155', '#0f172a', '#1e293b']
-      }
-    ]
-  },
-  {
-    id: 'electronics',
-    name: 'Electronics',
-    products: [
-      {
-        id: 'elec-1',
-        name: 'Retro Boombox',
-        price: '$299',
-        description: 'Classic 80s aesthetic combined with modern high-fidelity audio and wireless connectivity.',
-        modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/BoomBox/glTF-Binary/BoomBox.glb',
-        scale: 100,
-        colors: ['#1e293b', '#334155', '#475569', '#64748b']
-      },
-      {
-        id: 'elec-2',
-        name: 'Vintage Cam',
-        price: '$450',
-        description: 'A masterpiece of optical engineering, capturing timeless moments with a classic analog feel.',
-        modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/AntiqueCamera/glTF-Binary/AntiqueCamera.glb',
-        scale: 0.3,
-        colors: ['#000000', '#1a1a1a', '#333333', '#4d4d4d']
-      },
-      {
-        id: 'elec-3',
-        name: 'Aviator HUD',
-        price: '$1,200',
-        description: 'Professional grade flight helmet with integrated heads-up display and ballistic protection.',
-        modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/DamagedHelmet/glTF-Binary/DamagedHelmet.glb',
-        scale: 1.1,
-        colors: ['#451a03', '#78350f', '#92400e', '#b45309']
-      }
-    ]
-  },
-  {
-    id: 'cosmetics',
-    name: 'Cosmetics',
-    products: [
-      {
-        id: 'cos-1',
-        name: 'Luxe Essence',
-        price: '$180',
-        description: 'Premium fragrance in a designer bottle, crafted with rare botanicals for a lasting impression.',
-        modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/WaterBottle/glTF-Binary/WaterBottle.glb',
-        scale: 6,
-        colors: ['#f472b6', '#fb7185', '#c084fc', '#818cf8']
-      },
-      {
-        id: 'cos-2',
-        name: 'Organic Glow',
-        price: '$65',
-        description: 'Pure botanical extract for a natural, radiant complexion. Sustainable and ethically sourced.',
-        modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Avocado/glTF-Binary/Avocado.glb',
-        scale: 25,
-        colors: ['#10b981', '#059669', '#047857', '#064e3b']
-      }
-    ]
+    id: 'hero-3',
+    name: 'Luxe Essence',
+    price: '$180',
+    description: 'A curated botanical fragrance crafted for a lasting and sophisticated impression.',
+    modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/WaterBottle/glTF-Binary/WaterBottle.glb',
+    scale: 6,
+    color: '#f472b6'
   }
 ];
 
+const CURATED_PRODUCTS = [
+  { id: 1, name: 'Vintage Camera', price: '$450', brand: 'LEICA', image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&q=80&w=800' },
+  { id: 2, name: 'Retro Boombox', price: '$299', brand: 'BRAUN', image: 'https://images.unsplash.com/photo-1618609373357-191977f13b28?auto=format&fit=crop&q=80&w=800' },
+  { id: 3, name: 'Minimalist Chair', price: '$620', brand: 'HERMAN MILLER', image: 'https://images.unsplash.com/photo-1581539250439-c96689b51fa9?auto=format&fit=crop&q=80&w=800' },
+];
+
 export default function App() {
-  const [activeCategoryIndex, setActiveCategoryIndex] = useState(0);
-  const [activeProductIndex, setActiveProductIndex] = useState(0);
-  const [direction, setDirection] = useState(0); // -1 for left, 1 for right
-  
-  const currentCategory = CATEGORIES[activeCategoryIndex];
-  const currentProduct = currentCategory.products[activeProductIndex];
-  
-  const [activeColor, setActiveColor] = useState(currentProduct.colors[0]);
+  const [activeHeroIndex, setActiveHeroIndex] = useState(0);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
 
-  // Reset product index and color when category changes
-  const handleCategoryChange = (index: number) => {
-    setDirection(0);
-    setActiveCategoryIndex(index);
-    setActiveProductIndex(0);
-    setActiveColor(CATEGORIES[index].products[0].colors[0]);
-  };
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-  const nextProduct = () => {
-    setDirection(1);
-    const nextIndex = (activeProductIndex + 1) % currentCategory.products.length;
-    setActiveProductIndex(nextIndex);
-    setActiveColor(currentCategory.products[nextIndex].colors[0]);
-  };
+  const nextHero = () => setActiveHeroIndex((prev) => (prev + 1) % HERO_MODELS.length);
+  const prevHero = () => setActiveHeroIndex((prev) => (prev - 1 + HERO_MODELS.length) % HERO_MODELS.length);
 
-  const prevProduct = () => {
-    setDirection(-1);
-    const prevIndex = (activeProductIndex - 1 + currentCategory.products.length) % currentCategory.products.length;
-    setActiveProductIndex(prevIndex);
-    setActiveColor(currentCategory.products[prevIndex].colors[0]);
-  };
-
-  const variants = {
-    enter: (direction: number) => ({
-      x: direction > 0 ? 100 : direction < 0 ? -100 : 0,
-      opacity: 0,
-      scale: 0.95,
-      filter: 'blur(10px)'
-    }),
-    center: {
-      x: 0,
-      opacity: 1,
-      scale: 1,
-      filter: 'blur(0px)',
-      transition: {
-        x: { type: "spring" as const, stiffness: 300, damping: 30 },
-        opacity: { duration: 0.4 },
-        scale: { duration: 0.4 },
-        filter: { duration: 0.4 }
-      }
-    },
-    exit: (direction: number) => ({
-      x: direction > 0 ? -100 : direction < 0 ? 100 : 0,
-      opacity: 0,
-      scale: 1.05,
-      filter: 'blur(10px)',
-      transition: {
-        x: { type: "spring" as const, stiffness: 300, damping: 30 },
-        opacity: { duration: 0.3 },
-        scale: { duration: 0.3 },
-        filter: { duration: 0.3 }
-      }
-    })
-  };
+  const currentHero = HERO_MODELS[activeHeroIndex];
 
   return (
-    <div className="min-h-screen bg-[#f3f3f3] selection:bg-black selection:text-white font-sans overflow-hidden">
-      {/* Minimal Header */}
-      <header className="fixed top-0 left-0 w-full h-20 flex items-center justify-between px-12 z-50 pointer-events-none">
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="pointer-events-auto"
-        >
-          <span className="text-sm font-bold tracking-[0.5em] uppercase">LUXE 3D</span>
-        </motion.div>
-        
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="flex gap-12 pointer-events-auto"
-        >
-          {CATEGORIES.map((category, index) => (
-            <button
-              key={category.id}
-              onClick={() => handleCategoryChange(index)}
-              className={`text-[10px] uppercase tracking-[0.3em] font-bold transition-all hover:opacity-100 ${
-                activeCategoryIndex === index ? 'opacity-100 border-b-2 border-black pb-1' : 'opacity-30'
-              }`}
-            >
-              {category.name}
-            </button>
-          ))}
-        </motion.div>
-      </header>
+    <div className="min-h-screen bg-white text-black font-sans selection:bg-black selection:text-white overflow-x-hidden">
+      <CustomCursor />
 
-      {/* Main 3D Viewer Container */}
-      <main className="w-full h-screen relative">
-        <AnimatePresence mode="wait" custom={direction}>
-          <motion.div
-            key={`${currentCategory.id}-${currentProduct.id}`}
-            custom={direction}
-            variants={variants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            className="w-full h-full"
-          >
-            <ProductViewer 
-              modelUrl={currentProduct.modelUrl}
-              scale={currentProduct.scale}
-              activeColor={activeColor}
-              productName={currentProduct.name}
-              price={currentProduct.price}
-              description={currentProduct.description}
-            />
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Navigation Arrows */}
-        {currentCategory.products.length > 1 && (
-          <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between px-8 pointer-events-none z-40">
-            <motion.button
-              whileHover={{ scale: 1.1, x: -5 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={prevProduct}
-              className="w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm border border-black/5 flex items-center justify-center shadow-lg pointer-events-auto hover:bg-white transition-all"
-            >
-              <ChevronLeft size={20} strokeWidth={1.5} />
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.1, x: 5 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={nextProduct}
-              className="w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm border border-black/5 flex items-center justify-center shadow-lg pointer-events-auto hover:bg-white transition-all"
-            >
-              <ChevronRight size={20} strokeWidth={1.5} />
-            </motion.button>
+      {/* Persistent Navigation */}
+      <nav className={`fixed top-0 left-0 w-full z-[200] transition-all duration-700 px-8 md:px-16 flex items-center justify-between ${isScrolled ? 'bg-white/90 backdrop-blur-xl h-20 border-b border-black/5' : 'h-32'}`}>
+        <div className="flex items-center gap-12">
+          <button className="p-2 hover:opacity-50 transition-opacity"><Menu className="w-5 h-5" /></button>
+          <div className="hidden lg:flex gap-10 text-[10px] uppercase tracking-[0.5em] font-black italic">
+            <a href="#" className="hover:opacity-40 transition-opacity">Archive</a>
+            <a href="#" className="hover:opacity-40 transition-opacity">Collections</a>
           </div>
-        )}
-
-        {/* Color Picker Sidebar */}
-        <div className="absolute left-12 top-1/2 -translate-y-1/2 flex flex-col gap-6 z-40">
-          <span className="text-[9px] uppercase tracking-[0.4em] font-bold text-black/20 vertical-text mb-4">Select Color</span>
-          {currentProduct.colors.map((color) => (
-            <motion.button
-              key={color}
-              whileHover={{ scale: 1.2 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setActiveColor(color)}
-              className={`w-6 h-6 rounded-full border-2 transition-all ${
-                activeColor === color ? 'border-black scale-125' : 'border-transparent'
-              }`}
-              style={{ backgroundColor: color }}
-            />
-          ))}
         </div>
 
-        {/* Product Info Overlay */}
-        <div className="absolute bottom-12 left-12 z-40">
-          <motion.div
-            key={currentProduct.id}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="space-y-2"
-          >
-            <div className="flex items-center gap-4">
-              <span className="text-[10px] uppercase tracking-[0.5em] font-bold text-black/40">{currentCategory.name}</span>
-              <span className="text-[10px] uppercase tracking-[0.5em] font-bold text-black/20">
-                {activeProductIndex + 1} / {currentCategory.products.length}
-              </span>
+        <div className="absolute left-1/2 -translate-x-1/2">
+          <h1 className="text-2xl md:text-3xl font-black tracking-[0.6em] uppercase cursor-pointer">SSENSE</h1>
+        </div>
+
+        <div className="flex items-center gap-10">
+          <button className="p-2 hover:opacity-50 transition-opacity"><Search className="w-5 h-5" /></button>
+          <button className="p-2 hover:opacity-50 transition-opacity flex items-center gap-3">
+            <ShoppingBag className="w-5 h-5" />
+            <span className="text-[10px] font-black mt-1">0</span>
+          </button>
+        </div>
+      </nav>
+
+      {/* Hero Section - 3D Focused-Blur Carousel */}
+      <section className="relative w-full h-screen min-h-[850px] flex flex-col items-center justify-center overflow-hidden">
+        
+        {/* Fixed Background Typography Layer */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0">
+          <h2 className="text-[35vw] font-serif font-black italic tracking-tighter leading-none text-[#EFEFEF] translate-y-8">
+            Heritage
+          </h2>
+        </div>
+
+        {/* Carousel Viewport */}
+        <div className="w-full h-full relative z-10 flex flex-col items-center justify-center">
+          
+          {/* Slider Container */}
+          <div className="w-full relative h-[65vh] flex items-center justify-center overflow-visible">
+            {HERO_MODELS.map((model, index) => {
+              // Calculate relative position to handle infinite loop seamlessly
+              let position = index - activeHeroIndex;
+              if (position > HERO_MODELS.length / 2) position -= HERO_MODELS.length;
+              if (position < -HERO_MODELS.length / 2) position += HERO_MODELS.length;
+
+              const isActive = position === 0;
+              const isNext = position === 1;
+              const isPrev = position === -1;
+
+              return (
+                <motion.div
+                  key={model.id}
+                  id={isActive ? 'hero-active' : isNext ? 'hero-next' : isPrev ? 'hero-prev' : `hero-other-${index}`}
+                  initial={false}
+                  animate={{
+                    x: isActive ? 0 : isNext ? '35vw' : isPrev ? '-35vw' : position * 100 + '%',
+                    scale: isActive ? 1.2 : 0.8,
+                    opacity: isActive ? 1 : isNext || isPrev ? 0.4 : 0,
+                    filter: isActive ? 'blur(0px)' : 'blur(10px)',
+                    zIndex: isActive ? 20 : 10,
+                  }}
+                  transition={{
+                    duration: 0.8,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
+                  onClick={() => {
+                    if (isNext) nextHero();
+                    if (isPrev) prevHero();
+                    if (isActive) setSelectedProduct(model);
+                  }}
+                  className={`absolute w-full max-w-4xl h-full flex items-center justify-center px-12 transition-all duration-300 ${isActive ? 'cursor-default' : 'cursor-pointer hover:opacity-60 z-30'}`}
+                >
+                  <div className="w-full h-full pointer-events-none">
+                    <ProductViewer 
+                      modelUrl={model.modelUrl}
+                      scale={model.scale}
+                      activeColor={model.color}
+                      onModelClick={() => {}} 
+                    />
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* Centered Product Information - Below the model */}
+          <div className="text-center mt-4 space-y-4 max-w-xl z-30 relative px-6 pointer-events-none">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentHero.id}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.8 }}
+                className="flex flex-col items-center"
+              >
+                <span className="text-[10px] uppercase tracking-[0.8em] font-black text-black/20 block mb-4 italic">Edition Discovery • 2026 Collection</span>
+                <h3 className="text-5xl md:text-8xl font-serif italic tracking-tighter leading-none mb-6">{currentHero.name}</h3>
+                <p className="text-sm font-normal tracking-wide text-black/40 leading-relaxed mb-10 max-w-sm">
+                  {currentHero.description}
+                </p>
+                <button 
+                  onClick={() => setSelectedProduct(currentHero)}
+                  className="pointer-events-auto px-12 py-5 bg-black text-white text-[10px] uppercase tracking-[0.5em] font-black hover:bg-black/80 transition-all duration-300 transform active:scale-95 shadow-2xl shadow-black/10"
+                >
+                  View Collection Details
+                </button>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Navigation Controls */}
+          <div className="absolute inset-x-8 md:inset-x-16 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none z-[100]">
+            <button 
+              onClick={prevHero}
+              className="pointer-events-auto w-16 h-16 md:w-24 md:h-24 rounded-full flex items-center justify-center hover:bg-black group transition-all duration-700 backdrop-blur-sm"
+            >
+              <ChevronLeft className="w-8 h-8 md:w-12 md:h-12 group-hover:text-white transition-colors" strokeWidth={0.2} />
+            </button>
+            <button 
+              onClick={nextHero}
+              className="pointer-events-auto w-16 h-16 md:w-24 md:h-24 rounded-full flex items-center justify-center hover:bg-black group transition-all duration-700 backdrop-blur-sm"
+            >
+              <ChevronRight className="w-8 h-8 md:w-12 md:h-12 group-hover:text-white transition-colors" strokeWidth={0.2} />
+            </button>
+          </div>
+
+          {/* Timeline Indicator */}
+          <div className="absolute bottom-24 flex gap-8 z-[100]">
+            {HERO_MODELS.map((_, i) => (
+              <button 
+                key={i}
+                onClick={() => setActiveHeroIndex(i)}
+                className={`transition-all duration-1000 ${activeHeroIndex === i ? 'w-24 h-[3px] bg-black shadow-lg shadow-black/10' : 'w-10 h-[1px] bg-black/10 hover:bg-black/40'}`}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 opacity-30">
+          <span className="text-[10px] uppercase tracking-[1em] font-black text-black/40">Scroll Down</span>
+          <motion.div 
+            animate={{ y: [0, 15, 0] }}
+            transition={{ repeat: Infinity, duration: 2.5 }}
+            className="w-[1px] h-12 bg-black"
+          />
+        </div>
+      </section>
+
+      {/* Collection Grid Section */}
+      <section className="bg-white py-48 px-8 md:px-16 lg:px-24 border-t border-black/5">
+        <div className="max-w-7xl mx-auto">
+          <header className="flex flex-col md:flex-row justify-between items-end mb-32 gap-12">
+            <div className="space-y-8">
+              <span className="text-[10px] uppercase tracking-[1em] font-black text-black/10 block italic">Curated Essentials</span>
+              <h2 className="text-7xl md:text-9xl font-serif italic tracking-tighter leading-none">The Inventory</h2>
             </div>
-            <h1 className="text-4xl font-bold tracking-tighter uppercase">{currentProduct.name}</h1>
-          </motion.div>
-        </div>
-      </main>
+            <button className="group flex items-center gap-8 text-[11px] uppercase tracking-[0.6em] font-black border-b border-black pb-4 hover:gap-12 transition-all duration-500 whitespace-nowrap">
+              Explore All <ArrowRight className="w-4 h-4" />
+            </button>
+          </header>
 
-      {/* Footer Info */}
-      <footer className="fixed bottom-8 right-12 z-50 pointer-events-none">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-        >
-          <span className="text-[9px] uppercase tracking-[0.5em] font-bold text-black/20">© 2026 LUXE DIGITAL INTERACTIVE</span>
-        </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-40 gap-x-24">
+            {CURATED_PRODUCTS.map((prod, index) => (
+              <motion.div
+                key={prod.id}
+                initial={{ opacity: 0, y: 60 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ delay: (index % 3) * 0.2, duration: 1 }}
+                className="group cursor-pointer"
+              >
+                <div className="aspect-[3/4.5] overflow-hidden bg-[#F6F6F6] mb-12 relative flex items-center justify-center shadow-sm">
+                  <img 
+                    src={prod.image} 
+                    alt={prod.name}
+                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 flex items-center justify-center p-20">
+                    <button className="w-full bg-white text-black py-6 text-[11px] uppercase tracking-[0.4em] font-black hover:bg-black hover:text-white transition-all duration-500">
+                      View Entry
+                    </button>
+                  </div>
+                </div>
+                <div className="flex justify-between items-start px-2">
+                  <div className="space-y-3">
+                    <span className="text-[10px] uppercase tracking-widest font-black text-black/20 block tracking-[0.4em]">{prod.brand}</span>
+                    <h4 className="text-3xl font-serif italic tracking-tight leading-none">{prod.name}</h4>
+                  </div>
+                  <span className="text-sm font-light mt-4 opacity-40 tracking-tighter">{prod.price}</span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-black text-white pt-52 pb-24 px-8 md:px-16">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-32 mb-40">
+          <div className="lg:col-span-4 space-y-16">
+            <h5 className="text-5xl font-black tracking-[0.5em]">SSENSE</h5>
+            <p className="text-[12px] text-white/20 leading-relaxed uppercase tracking-[0.3em] max-w-sm italic">
+              Cultivating the synergy between avant-garde technology and artisanal luxury.
+            </p>
+          </div>
+          
+          <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-4 gap-20">
+            <div className="flex flex-col gap-10 text-[11px] uppercase tracking-[0.5em] font-black">
+              <span className="text-white/20 uppercase tracking-[0.3em]">Segments</span>
+              <a href="#" className="hover:text-white/60 transition-colors">Male</a>
+              <a href="#" className="hover:text-white/60 transition-colors">Female</a>
+              <a href="#" className="hover:text-white/60 transition-colors">Kids</a>
+            </div>
+            <div className="flex flex-col gap-10 text-[11px] uppercase tracking-[0.5em] font-black">
+              <span className="text-white/20 uppercase tracking-[0.3em]">Queries</span>
+              <a href="#" className="hover:text-white/60 transition-colors">Shipping</a>
+              <a href="#" className="hover:text-white/60 transition-colors">Exchanges</a>
+              <a href="#" className="hover:text-white/60 transition-colors">Policies</a>
+            </div>
+            <div className="flex flex-col gap-10 text-[11px] uppercase tracking-[0.5em] font-black">
+              <span className="text-white/20 uppercase tracking-[0.3em]">Join Us</span>
+              <a href="#" className="hover:text-white/60 transition-colors">Careers</a>
+              <a href="#" className="hover:text-white/60 transition-colors">Investors</a>
+            </div>
+            <div className="flex flex-col gap-10 text-[11px] uppercase tracking-[0.5em] font-black">
+              <span className="text-white/20 uppercase tracking-[0.3em]">Journal</span>
+              <a href="#" className="hover:text-white/60 transition-colors">Instagram</a>
+              <a href="#" className="hover:text-white/60 transition-colors">Twitter</a>
+            </div>
+          </div>
+        </div>
+        
+        <div className="max-w-7xl mx-auto pt-24 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-16">
+          <span className="text-[10px] uppercase tracking-[1em] text-white/10 italic">© 2026 LUXE DIGITAL INTERACTIVE • GENESIS EDITION</span>
+        </div>
       </footer>
 
-      <style>{`
-        .vertical-text {
-          writing-mode: vertical-rl;
-          text-orientation: mixed;
-          transform: rotate(180deg);
-        }
-      `}</style>
+      {/* Details Overlay */}
+      <AnimatePresence>
+        {selectedProduct && (
+          <ProductDetails 
+            product={selectedProduct}
+            activeColor={selectedProduct.color}
+            onClose={() => setSelectedProduct(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
